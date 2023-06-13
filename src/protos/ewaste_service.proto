@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package ewaste;
+
+// The eWaste service definition.
+service EwasteService {
+  rpc AddEwaste (AddEwasteRequest) returns (AddEwasteResponse) {}
+  rpc GetUserEwaste (GetUserEwasteRequest) returns (GetUserEwasteResponse) {}
+  rpc GetUserEwasteStats (GetUserEwasteStatsRequest) returns (GetUserEwasteStatsResponse) {}
+  rpc GetEwasteItem (GetEwasteItemRequest) returns (GetEwasteItemResponse) {}
+}
+
+message AddEwasteRequest {
+  string user_name = 1;
+  string item_type = 2;
+  float weight = 3;
+}
+
+message AddEwasteResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetUserEwasteRequest {
+  string user_name = 1;
+}
+
+message GetUserEwasteResponse {
+  repeated EwasteItem items = 1;
+}
+
+message GetUserEwasteStatsRequest {
+  string user_name = 1;
+}
+
+message GetUserEwasteStatsResponse {
+  map<string, float> item_type_to_weight = 1;
+}
+
+message GetEwasteItemRequest {
+  int32 item_id = 1;
+}
+
+message GetEwasteItemResponse {
+  EwasteItem item = 1;
+}
+
+message EwasteItem {
+  int32 item_id = 1;
+  string user_name = 2;
+  string item_type = 3;
+  float weight = 4;
+  string date_added = 5; 
+}

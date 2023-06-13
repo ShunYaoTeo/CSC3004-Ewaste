@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-db
+  labels:
+    app: auth-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-db
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: auth-db
+    spec:
+      containers:
+      - name: auth-db
+        image: mysql:5.7
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: auth_eWaste
+        - name: MYSQL_USER
+          value: eWaste_user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user-password
+        volumeMounts:
+        - name: auth-db-storage
+          mountPath: /var/lib/mysql
+        - name: auth-db-init
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: auth-db-storage
+        persistentVolumeClaim:
+          claimName: auth-db-pvc
+      - name: auth-db-init
+        configMap:
+          name: auth-db-init

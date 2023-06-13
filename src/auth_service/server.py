@@ -1,3 +1,4 @@
+import json
 import jwt, datetime, os
 from flask import Flask, request
 from flask_mysqldb import MySQL
@@ -51,17 +52,20 @@ def validate():
     
     return decoded_JWT, 200
 
-def createJWT(username, jwt_key, admin):
+def createJWT(username, secret, admin):
     return jwt.encode(
-        {
-            "username": username,
-            "expireAt": datetime.datetime.utcnow() + datetime.timedelta(days=1),
-            "issuedAt": datetime.datetime.utcnow,
-            "admin": admin,
-        },
-        jwt_key,
-        algorithm="HS256",
-    )
+            {
+                "username": username,
+                "exp": datetime.datetime.now(tz=datetime.timezone.utc)
+                + datetime.timedelta(days=1),
+                # issued_at
+                "iat": datetime.datetime.utcnow(),
+                "admin": admin,
+            },
+            secret,
+            algorithm="HS256",
+        )
+
 
 if __name__ == "__main__":
     server.run(host="0.0.0.0", port=5000)

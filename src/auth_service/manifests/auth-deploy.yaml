@@ -23,6 +23,11 @@ spec:
           image: shunyaoteo99/auth_ewaste
           ports:
             - containerPort: 5000
+          env:
+            - name: MYSQL_USER
+              value: eWaste_user
+            - name: MYSQL_DATABASE
+              value: auth_eWaste
           envFrom:
             - configMapRef:
                 name: auth-configmap
