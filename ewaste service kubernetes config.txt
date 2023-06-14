@@ -1,0 +1,197 @@
+ewaste service kubernetes config:
+
+deployment:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-ewaste
+  labels:
+    app: service-ewaste
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: service-ewaste
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: service-ewaste
+    spec:
+      containers:
+        - name: service-ewaste
+          image: shunyaoteo99/service_ewaste
+          ports:
+            - containerPort: 50051
+          env:
+            - name: MYSQL_USER
+              value: eWaste_user
+            - name: MYSQL_DATABASE
+              value: service_eWaste
+          envFrom:
+            - configMapRef:
+                name: service-configmap
+            - secretRef:
+                name: service-secret
+
+configmap:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-configmap
+data:
+  MYSQL_HOST: ewaste-db
+  MYSQL_USER: eWaste_user
+  MYSQL_DB: service_eWaste
+  MYSQL_PORT: "3306"
+
+service:
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-ewaste
+spec:
+  selector:
+    app: service-ewaste
+  type: ClusterIP
+  ports:
+    - port: 50051
+      targetPort: 50051
+      protocol: TCP
+
+secret:
+apiVersion: v1
+kind: Secret
+metadata: 
+  name: service-secret
+stringData:
+  MYSQL_PASSWORD: CSC3005
+type: Opaque
+
+
+
+ewaste database mysql kubenetes config:
+
+deploy:
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ewaste-db
+  labels:
+    app: ewaste-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ewaste-db
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: ewaste-db
+    spec:
+      containers:
+      - name: ewaste-db
+        image: mysql:5.7
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: service_eWaste
+        - name: MYSQL_USER
+          value: eWaste_user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user-password
+        volumeMounts:
+        - name: ewaste-db-storage
+          mountPath: /var/lib/mysql
+        - name: ewaste-db-init
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: ewaste-db-storage
+        persistentVolumeClaim:
+          claimName: ewaste-db-pvc
+      - name: ewaste-db-init
+        configMap:
+          name: ewaste-db-init
+
+configmap:
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ewaste-db-init
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS service_eWaste;
+    GRANT ALL PRIVILEGES ON service_eWaste.* TO 'eWaste_user'@'%';
+    USE service_eWaste;
+    CREATE TABLE eWasteItems (
+        ItemId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        UserName VARCHAR(255) NOT NULL UNIQUE,
+        ItemType VARCHAR(255),
+        ItemWeight DECIMAL(7,2),
+        DateSubmitted DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE ItemTypeStats (
+        UserName VARCHAR(255),
+        ItemType VARCHAR(255),
+        TotalWeight DECIMAL(7,2),
+        TotalItems INT,
+        PRIMARY KEY(UserName, ItemType)
+    );
+    INSERT INTO eWasteItems (UserName, ItemType, ItemWeight) VALUES ('shunyaoteo99@gmail.com', "batteries", 100.0);
+    INSERT INTO eWasteItems (UserName, ItemType, ItemWeight) VALUES ('test@test.com', "resistors", 1500.0);
+    INSERT INTO eWasteItems (UserName, ItemType, ItemWeight) VALUES ('user1@user.com', "wires", 200.0);
+    INSERT INTO ItemTypeStats (UserName, ItemType, TotalWeight, TotalItems) VALUES ('shunyaoteo99@gmail.com', "batteries", 100.0, 1);
+    INSERT INTO ItemTypeStats (UserName, ItemType, TotalWeight, TotalItems) VALUES ('test@test.com', "resistors", 1500.0, 1);
+    INSERT INTO ItemTypeStats (UserName, ItemType, TotalWeight, TotalItems) VALUES ('user1@user.com', "wires", 200.0, 1);
+
+pvc:
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ewaste-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+service:
+apiVersion: v1
+kind: Service
+metadata:
+  name: ewaste-db
+spec:
+  selector:
+    app: ewaste-db
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+secrets:
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+type: Opaque
+stringData:
+  root-password: "root"
+  user-password: "CSC3005"
+

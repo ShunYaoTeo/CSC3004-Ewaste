@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ewaste-db
+  labels:
+    app: ewaste-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ewaste-db
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: ewaste-db
+    spec:
+      containers:
+      - name: ewaste-db
+        image: mysql:5.7
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: service_eWaste
+        - name: MYSQL_USER
+          value: eWaste_user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user-password
+        volumeMounts:
+        - name: ewaste-db-storage
+          mountPath: /var/lib/mysql
+        - name: ewaste-db-init
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: ewaste-db-storage
+        persistentVolumeClaim:
+          claimName: ewaste-db-pvc
+      - name: ewaste-db-init
+        configMap:
+          name: ewaste-db-init

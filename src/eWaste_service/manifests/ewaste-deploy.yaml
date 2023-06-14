@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-ewaste
+  labels:
+    app: service-ewaste
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: service-ewaste
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: service-ewaste
+    spec:
+      containers:
+        - name: service-ewaste
+          image: shunyaoteo99/service_ewaste
+          ports:
+            - containerPort: 50051
+          env:
+            - name: MYSQL_USER
+              value: eWaste_user
+            - name: MYSQL_DATABASE
+              value: service_eWaste
+          envFrom:
+            - configMapRef:
+                name: service-configmap
+            - secretRef:
+                name: service-secret

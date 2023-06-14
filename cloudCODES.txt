@@ -1,0 +1,18 @@
+python -m grpc_tools.protoc -I../protos --python_out=. --grpc_python_out=. ../protos/ewaste_service.proto
+
+kubectl exec -it auth-db-6895c77c56-v4nd9 -- mysql -u eWaste_user -pCSC3005 auth_eWaste 
+kubectl exec -it ewaste-db-86955d898f-j4rzp -- mysql -u eWaste_user -pCSC3005 service_eWaste 
+
+Remove-item alias:curl
+
+curl -X POST http://ewaste-management.com/login -u shunyaoteo99@gmail.com:Admin123 
+
+curl -X GET -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNodW55YW90ZW85OUBnbWFpbC5jb20iLCJleHAiOjE2ODY4MzU2ODQsImlhdCI6MTY4Njc0OTI4NCwiYWRtaW4iOjF9.e6zlvMOnA073l7BUR2d8JasMnhq7GHQC9oyFZqd6wMg' http://ewaste-management.com/getUserEwaste
+
+Gateway:
+enter venv
+pip install grpcio-tools
+generate pb2 files
+add codes in
+generate requirements.txt (done till this point)
+docker build

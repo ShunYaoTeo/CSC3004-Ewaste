@@ -34,7 +34,7 @@ message GetUserEwasteStatsRequest {
 }
 
 message GetUserEwasteStatsResponse {
-  map<string, float> item_type_to_weight = 1;
+  map<string, EwasteStats> item_stats = 1;
 }
 
 message GetEwasteItemRequest {
@@ -51,4 +51,9 @@ message EwasteItem {
   string item_type = 3;
   float weight = 4;
   string date_added = 5; 
+}
+
+message EwasteStats {
+  float total_weight = 1;
+  int32 total_items = 2;
 }
