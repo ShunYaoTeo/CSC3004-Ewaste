@@ -2,7 +2,10 @@ import grpc
 from concurrent import futures
 import ewaste_service_pb2
 import ewaste_service_pb2_grpc
+import rewards_service_pb2
+import rewards_service_pb2_grpc
 import os
+import math
 import logging, traceback
 import pymysql.cursors
 
@@ -15,15 +18,58 @@ connection = pymysql.connect(
     cursorclass=pymysql.cursors.DictCursor
 )
 
+# Item Type to Points Gain rule
+EWASTE_POINTS = {
+    "batteries": 5,
+    "resistors": 10,
+    "wires": 3,
+    }
+
 class EwasteServiceServicer(ewaste_service_pb2_grpc.EwasteServiceServicer):
+    
+
+    def calculate_points(self, item_type, weight_kg):
+        """Calculate points based on item type and weight."""
+        # Make sure item type is recognized
+        if item_type not in EWASTE_POINTS:
+            raise ValueError(f"Unknown item type {item_type}")
+
+        # Get points per kg for the item type
+        points_per_kg = EWASTE_POINTS[item_type]
+
+        # Calculate total points
+        total_points = weight_kg * points_per_kg
+        total_points = math.ceil(total_points)
+
+        return int(total_points)
     
     def AddEwaste(self, request, context):
         try:
             with connection.cursor() as cursor:
                 cursor.execute('''INSERT INTO eWasteItems (UserName, ItemType, ItemWeight) VALUES (%s, %s, %s)''',
                             (request.user_name, request.item_type, request.weight))
+                
+                cursor.execute('''INSERT INTO ItemTypeStats (UserName, ItemType, TotalWeight, TotalItems)
+                                  VALUES (%s, %s, %s, 1)
+                                  ON DUPLICATE KEY UPDATE TotalWeight = TotalWeight + %s, TotalItems = TotalItems + 1''',
+                            (request.user_name, request.item_type, request.weight, request.weight))
+                
                 connection.commit()
-                return ewaste_service_pb2.AddEwasteResponse(success=True, message="E-Waste item added.")
+
+                points_to_add = self.calculate_points(request.item_type, request.weight)
+                
+
+                # Call Rewards Service Grpc Server to update User Points
+                rewards_channel = grpc.insecure_channel('rewards-ewaste:50052')
+                stub = rewards_service_pb2_grpc.RewardServiceStub(rewards_channel)
+                add_points_request = rewards_service_pb2.AddPointsRequest(username=request.user_name, pointsToAdd=points_to_add)
+                add_points_response = stub.AddPoints(add_points_request)
+
+                if add_points_response.success:
+                    return ewaste_service_pb2.AddEwasteResponse(success=True, message="E-Waste item added.")
+                else:
+                    return ewaste_service_pb2.AddEwasteResponse(success=False, message="Add Points Error.")
+                
         except Exception as e:
             print(f"An exception occurred: {e}")
             traceback.print_exc() 

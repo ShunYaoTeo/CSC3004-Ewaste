@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package rewards;
+
+service RewardService {
+    rpc AddPoints(AddPointsRequest) returns (AddPointsResponse);
+    rpc GetRewards(GetRewardsRequest) returns (GetRewardsResponse);
+    rpc GetUserRewards(GetUserRewardsRequest) returns (GetUserRewardsResponse);
+    rpc GetUserPoints(GetUserPointsRequest) returns (GetUserPointsResponse);
+    rpc RedeemReward(RedeemRewardRequest) returns (RedeemRewardResponse);
+}
+
+message AddPointsRequest {
+    string username = 1;
+    int32 pointsToAdd = 2;
+}
+
+message AddPointsResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message GetUserRewardsRequest {
+    string username = 1;
+}
+
+message GetUserRewardsResponse {
+    repeated Reward rewards = 1; 
+}
+
+message RedeemRewardRequest {
+    string username = 1;
+    int32 rewardId = 2;
+}
+
+message RedeemRewardResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message Reward {
+    int32 rewardId = 1;
+    string rewardName = 2;
+    int32 rewardPoints = 3;
+}
+
+message GetRewardsRequest {
+}
+
+message GetRewardsResponse {
+    repeated Reward rewards = 1;  
+}
+
+message GetUserPointsRequest {
+    string username = 1;
+}
+
+message GetUserPointsResponse {
+    int32 points = 1;
+}
+
