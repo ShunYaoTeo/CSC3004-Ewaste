@@ -101,8 +101,11 @@ def getUserEwasteStats():
     req = ewaste_service_pb2.GetUserEwasteStatsRequest(user_name=str(user_name))
     items = eWasteServiceStub.GetUserEwasteStats(req)
 
-    items_dict = [{'item_type': item.item_type, 'total_weight': item.total_weight, 'total_items': item.total_items} for item in items.items]
-    
+    items_dict = [
+    {'item_type': item_type, 'total_weight': item.total_weight, 'total_items': item.total_items}
+    for item_type, item in items.item_stats.items()
+    ]
+
     return jsonify(items_dict), 200
 
 ######### Rewards Service Endpoints ###########
@@ -115,8 +118,8 @@ def getReward():
         print("*[Gateway Service] validation failed: ", err)
         return err
 
-    req = rewards_service_pb2.GetRewardRequest()
-    resp = rewardsServiceStub.GetReward(req)
+    req = rewards_service_pb2.GetRewardsRequest()
+    resp = rewardsServiceStub.GetRewards(req)
     rewards_dict = [{'reward_id': reward.rewardId, 'reward_name': reward.rewardName, 'cost': reward.rewardPoints} for reward in resp.rewards]
 
     return jsonify(rewards_dict), 200

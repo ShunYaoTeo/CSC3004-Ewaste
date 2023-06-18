@@ -41,7 +41,7 @@ class RewardServiceServicer(rewards_service_pb2_grpc.RewardServiceServicer):
                 cursor.execute("SELECT * FROM Rewards")
                 rewards = cursor.fetchall()
 
-            return rewards_service_pb2.GetRewardsResponse(rewards=[rewards_service_pb2.Reward(rewardId=reward['RewardId'], rewardName=reward['RewardName'], rewardPoints=reward['RewardPoints']) for reward in rewards])
+            return rewards_service_pb2.GetRewardsResponse(rewards=[rewards_service_pb2.Reward(rewardId=reward['RewardId'], rewardName=reward['RewardName'], rewardPoints=reward['Cost']) for reward in rewards])
 
         except Exception as e:
             print(f"An exception occurred: {e}")

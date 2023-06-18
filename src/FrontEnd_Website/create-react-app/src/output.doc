@@ -1,0 +1,182 @@
+Folder PATH listing
+Volume serial number is D249-D186
+C:.
+|   App.js
+|   config.js
+|   index.js
+|   output.doc
+|   serviceWorker.js
+|   
++---api
+|       api.js
+|       
++---assets
+|   +---images
+|   |   |   logo-dark.svg
+|   |   |   logo-white.svg
+|   |   |   logo.svg
+|   |   |   
+|   |   +---auth
+|   |   |       auth-blue-card.svg
+|   |   |       auth-pattern-dark.svg
+|   |   |       auth-pattern.svg
+|   |   |       auth-purple-card.svg
+|   |   |       auth-signup-blue-card.svg
+|   |   |       auth-signup-white-card.svg
+|   |   |       
+|   |   +---icons
+|   |   |       earning.svg
+|   |   |       social-google.svg
+|   |   |       
+|   |   \---users
+|   |           user-round.svg
+|   |           
+|   \---scss
+|           style.scss
+|           _themes-vars.module.scss
+|           
++---hooks
+|       useScriptRef.js
+|       
++---layout
+|   |   NavigationScroll.js
+|   |   NavMotion.js
+|   |   
+|   +---Customization
+|   |       index.js
+|   |       
+|   +---MainLayout
+|   |   |   index.js
+|   |   |   
+|   |   +---Header
+|   |   |   |   index.js
+|   |   |   |   
+|   |   |   +---NotificationSection
+|   |   |   |       index.js
+|   |   |   |       NotificationList.js
+|   |   |   |       
+|   |   |   +---ProfileSection
+|   |   |   |       index.js
+|   |   |   |       UpgradePlanCard.js
+|   |   |   |       
+|   |   |   \---SearchSection
+|   |   |           index.js
+|   |   |           
+|   |   +---LogoSection
+|   |   |       index.js
+|   |   |       
+|   |   \---Sidebar
+|   |       |   index.js
+|   |       |   
+|   |       +---MenuCard
+|   |       |       index.js
+|   |       |       
+|   |       \---MenuList
+|   |           |   index.js
+|   |           |   
+|   |           +---NavCollapse
+|   |           |       index.js
+|   |           |       
+|   |           +---NavGroup
+|   |           |       index.js
+|   |           |       
+|   |           \---NavItem
+|   |                   index.js
+|   |                   
+|   \---MinimalLayout
+|           index.js
+|           
++---menu-items
+|       dashboard.js
+|       index.js
+|       other.js
+|       pages.js
+|       utilities.js
+|       
++---routes
+|       AuthenticationRoutes.js
+|       index.js
+|       MainRoutes.js
+|       
++---store
+|       actions.js
+|       constant.js
+|       customizationReducer.js
+|       index.js
+|       reducer.js
+|       
++---themes
+|       compStyleOverride.js
+|       index.js
+|       palette.js
+|       typography.js
+|       
++---ui-component
+|   |   Loadable.js
+|   |   Loader.js
+|   |   Logo.js
+|   |   
+|   +---cards
+|   |   |   AuthFooter.js
+|   |   |   CardSecondaryAction.js
+|   |   |   MainCard.js
+|   |   |   SubCard.js
+|   |   |   
+|   |   \---Skeleton
+|   |           EarningCard.js
+|   |           ImagePlaceholder.js
+|   |           PopularCard.js
+|   |           ProductPlaceholder.js
+|   |           TotalGrowthBarChart.js
+|   |           TotalIncomeCard.js
+|   |           
+|   \---extended
+|           AnimateButton.js
+|           Avatar.js
+|           Breadcrumbs.js
+|           Transitions.js
+|           
++---utils
+|       password-strength.js
+|       
+\---views
+    +---dashboard
+    |   \---Default
+    |       |   BajajAreaChartCard.js
+    |       |   EarningCard.js
+    |       |   index.js
+    |       |   PopularCard.js
+    |       |   TotalGrowthBarChart.js
+    |       |   TotalIncomeDarkCard.js
+    |       |   TotalIncomeLightCard.js
+    |       |   TotalOrderLineChartCard.js
+    |       |   
+    |       \---chart-data
+    |               bajaj-area-chart.js
+    |               total-growth-bar-chart.js
+    |               total-order-month-line-chart.js
+    |               total-order-year-line-chart.js
+    |               
+    +---pages
+    |   \---authentication
+    |       |   AuthCardWrapper.js
+    |       |   AuthWrapper1.js
+    |       |   
+    |       +---auth-forms
+    |       |       AuthLogin.js
+    |       |       AuthRegister.js
+    |       |       
+    |       \---authentication3
+    |               Login3.js
+    |               Register3.js
+    |               
+    +---sample-page
+    |       index.js
+    |       
+    \---utilities
+            Color.js
+            MaterialIcons.js
+            Shadow.js
+            TablerIcons.js
+            Typography.js
+            
