@@ -8,15 +8,31 @@ import os
 import math
 import logging, traceback
 import pymysql.cursors
+from pymysql.err import OperationalError, InterfaceError
 
-connection = pymysql.connect(
-    host=os.environ.get("MYSQL_HOST"),
-    user=os.environ.get("MYSQL_USER"),
-    password=os.environ.get("MYSQL_PASSWORD"),
-    database=os.environ.get("MYSQL_DB"),
-    port=int(os.environ.get("MYSQL_PORT")),
-    cursorclass=pymysql.cursors.DictCursor
-)
+def execute_query(query, args):
+    try:
+        conn = pymysql.connect(
+            host=os.environ.get("MYSQL_HOST"),
+            user=os.environ.get("MYSQL_USER"),
+            password=os.environ.get("MYSQL_PASSWORD"),
+            database=os.environ.get("MYSQL_DB"),
+            port=int(os.environ.get("MYSQL_PORT")),
+            cursorclass=pymysql.cursors.DictCursor
+        )
+
+        with conn.cursor() as cursor:
+            cursor.execute(query, args)
+            conn.commit()
+            results = cursor.fetchall()
+        
+        conn.close()
+
+        return results
+    except (OperationalError, InterfaceError) as e:
+        print(f"*[EWASTE SERVICE] Error: {e}. Attempting to reconnect to MySQL...")
+        return execute_query(query, args)
+
 
 # Item Type to Points Gain rule
 EWASTE_POINTS = {
@@ -24,6 +40,9 @@ EWASTE_POINTS = {
     "resistors": 10,
     "wires": 3,
     }
+
+
+
 
 class EwasteServiceServicer(ewaste_service_pb2_grpc.EwasteServiceServicer):
     
@@ -45,31 +64,29 @@ class EwasteServiceServicer(ewaste_service_pb2_grpc.EwasteServiceServicer):
     
     def AddEwaste(self, request, context):
         try:
-            with connection.cursor() as cursor:
-                cursor.execute('''INSERT INTO eWasteItems (UserName, ItemType, ItemWeight) VALUES (%s, %s, %s)''',
-                            (request.user_name, request.item_type, request.weight))
-                
-                cursor.execute('''INSERT INTO ItemTypeStats (UserName, ItemType, TotalWeight, TotalItems)
-                                  VALUES (%s, %s, %s, 1)
-                                  ON DUPLICATE KEY UPDATE TotalWeight = TotalWeight + %s, TotalItems = TotalItems + 1''',
-                            (request.user_name, request.item_type, request.weight, request.weight))
-                
-                connection.commit()
+            
+            execute_query('''INSERT INTO eWasteItems (UserName, ItemType, ItemWeight) VALUES (%s, %s, %s)''',
+                        (request.user_name, request.item_type, request.weight))
+            
+            execute_query('''INSERT INTO ItemTypeStats (UserName, ItemType, TotalWeight, TotalItems)
+                                VALUES (%s, %s, %s, 1)
+                                ON DUPLICATE KEY UPDATE TotalWeight = TotalWeight + %s, TotalItems = TotalItems + 1''',
+                        (request.user_name, request.item_type, request.weight, request.weight))
+            
+            points_to_add = self.calculate_points(request.item_type, request.weight)
+            
 
-                points_to_add = self.calculate_points(request.item_type, request.weight)
-                
+            # Call Rewards Service Grpc Server to update User Points
+            rewards_channel = grpc.insecure_channel('rewards-ewaste:50052')
+            stub = rewards_service_pb2_grpc.RewardServiceStub(rewards_channel)
+            add_points_request = rewards_service_pb2.AddPointsRequest(username=request.user_name, pointsToAdd=points_to_add)
+            add_points_response = stub.AddPoints(add_points_request)
 
-                # Call Rewards Service Grpc Server to update User Points
-                rewards_channel = grpc.insecure_channel('rewards-ewaste:50052')
-                stub = rewards_service_pb2_grpc.RewardServiceStub(rewards_channel)
-                add_points_request = rewards_service_pb2.AddPointsRequest(username=request.user_name, pointsToAdd=points_to_add)
-                add_points_response = stub.AddPoints(add_points_request)
-
-                if add_points_response.success:
-                    return ewaste_service_pb2.AddEwasteResponse(success=True, message="E-Waste item added.")
-                else:
-                    return ewaste_service_pb2.AddEwasteResponse(success=False, message="Add Points Error.")
-                
+            if add_points_response.success:
+                return ewaste_service_pb2.AddEwasteResponse(success=True, message="E-Waste item added.")
+            else:
+                return ewaste_service_pb2.AddEwasteResponse(success=False, message="Add Points Error.")
+            
         except Exception as e:
             print(f"An exception occurred: {e}")
             traceback.print_exc() 
@@ -77,20 +94,19 @@ class EwasteServiceServicer(ewaste_service_pb2_grpc.EwasteServiceServicer):
 
     def GetUserEwaste(self, request, context):
         try:
-            with connection.cursor() as cursor:
-                cursor.execute('''SELECT * from eWasteItems WHERE UserName = %s''', (request.user_name,))
-                results = cursor.fetchall()
-                if results:
-                    ewaste_items = [ewaste_service_pb2.EwasteItem(
-                            item_id=int(result["ItemId"]),
-                            user_name=result["UserName"],
-                            item_type=result["ItemType"],
-                            weight=float(result["ItemWeight"]),
-                            date_added=str(result["DateSubmitted"])
-                        ) for result in results]
-                    return ewaste_service_pb2.GetUserEwasteResponse(items=ewaste_items)
-                else:
-                    return ewaste_service_pb2.GetUserEwasteResponse(items=[])
+        
+            results = execute_query('''SELECT * from eWasteItems WHERE UserName = %s''', (request.user_name,))
+            if results:
+                ewaste_items = [ewaste_service_pb2.EwasteItem(
+                        item_id=int(result["ItemId"]),
+                        user_name=result["UserName"],
+                        item_type=result["ItemType"],
+                        weight=float(result["ItemWeight"]),
+                        date_added=str(result["DateSubmitted"])
+                    ) for result in results]
+                return ewaste_service_pb2.GetUserEwasteResponse(items=ewaste_items)
+            else:
+                return ewaste_service_pb2.GetUserEwasteResponse(items=[])
         except Exception as e:
             print(f"An exception occurred: {e}")
             traceback.print_exc() 
@@ -98,14 +114,12 @@ class EwasteServiceServicer(ewaste_service_pb2_grpc.EwasteServiceServicer):
 
     def GetUserEwasteStats(self, request, context):
         try:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT ItemType, TotalWeight, TotalItems FROM ItemTypeStats WHERE UserName=%s", (request.user_name,))
-                results = cursor.fetchall()
-                if results:
-                    stats = {item["ItemType"]: ewaste_service_pb2.EwasteStats(total_weight=item["TotalWeight"], total_items=item["TotalItems"]) for item in results}
-                    return ewaste_service_pb2.GetUserEwasteStatsResponse(item_stats=stats)
-                else:
-                    return ewaste_service_pb2.GetUserEwasteStatsResponse(item_stats={})
+            results = execute_query("SELECT ItemType, TotalWeight, TotalItems FROM ItemTypeStats WHERE UserName=%s", (request.user_name,))
+            if results:
+                stats = {item["ItemType"]: ewaste_service_pb2.EwasteStats(total_weight=item["TotalWeight"], total_items=item["TotalItems"]) for item in results}
+                return ewaste_service_pb2.GetUserEwasteStatsResponse(item_stats=stats)
+            else:
+                return ewaste_service_pb2.GetUserEwasteStatsResponse(item_stats={})
         except Exception as e:
             print(f"An exception occurred: {e}")
             traceback.print_exc() 

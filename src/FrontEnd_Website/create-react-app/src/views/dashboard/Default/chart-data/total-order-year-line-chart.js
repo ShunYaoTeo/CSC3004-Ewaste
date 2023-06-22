@@ -1,6 +1,5 @@
 // ===========================|| DASHBOARD - TOTAL ORDER YEAR CHART ||=========================== //
-
-const chartData = {
+const generateDefaultChartData  = {
   type: 'line',
   height: 90,
   options: {
@@ -49,4 +48,16 @@ const chartData = {
   ]
 };
 
-export default chartData;
+const generateYearChartData = (donationData) => {
+  return {
+    ...generateDefaultChartData,
+    series: [
+      {
+        name: 'series1',
+        data: donationData
+      }
+    ]
+  };
+};
+
+export default generateYearChartData;

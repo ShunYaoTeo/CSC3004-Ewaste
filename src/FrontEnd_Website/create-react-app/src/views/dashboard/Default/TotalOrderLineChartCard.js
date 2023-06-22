@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
-import { useState } from 'react';
+// import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles';
@@ -7,17 +7,17 @@ import { Avatar, Box, Button, Grid, Typography } from '@mui/material';
 
 // third-party
 import Chart from 'react-apexcharts';
+import { groupBy, size } from 'lodash';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonTotalOrderCard from 'ui-component/cards/Skeleton/EarningCard';
-
-import ChartDataMonth from './chart-data/total-order-month-line-chart';
-import ChartDataYear from './chart-data/total-order-year-line-chart';
+import { getUserEwaste } from 'api/api'
 
 // assets
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import generateMonthChartData from './chart-data/total-order-month-line-chart';
+import generateYearChartData from './chart-data/total-order-year-line-chart';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.primary.dark,
@@ -63,13 +63,52 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ==============================|| DASHBOARD - TOTAL ORDER LINE CHART CARD ||============================== //
 
-const TotalOrderLineChartCard = ({ isLoading }) => {
+const TotalOrderLineChartCard = () => {
   const theme = useTheme();
-
+  const [isLoading, setIsLoading] = useState(true);
   const [timeValue, setTimeValue] = useState(false);
+  const [monthlyDonationCounts, setMonthlyDonationCounts] = useState([]);
+  const [yearlyDonationCounts, setYearlyDonationCounts] = useState([]);
+
+  useEffect(() => {
+    // Fetch data when component mounts
+    setIsLoading(true);
+    const fetchData = async () => {
+      const data = await getUserEwaste();
+      console.log(data)
+
+      const donationsGroupedByMonth = groupBy(data, (donation) =>
+        new Date(donation.date_added).getMonth()
+      );
+
+      const donationsGroupedByYear = groupBy(data, (donation) =>
+        new Date(donation.date_added).getFullYear()
+      );
+
+      console.log('donationsGroupedByMonth:', donationsGroupedByMonth);
+      console.log('donationsGroupedByYear:', donationsGroupedByYear);
+
+      // Count donations per month and year
+      const monthlyCounts = Object.values(donationsGroupedByMonth).map(size);
+      const yearlyCounts = Object.values(donationsGroupedByYear).map(size);
+
+      console.log('monthlyCounts:', monthlyCounts);
+      console.log('yearlyCounts:', yearlyCounts);
+
+      setMonthlyDonationCounts(monthlyCounts);
+      setYearlyDonationCounts(yearlyCounts);
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
   const handleChangeTime = (event, newValue) => {
     setTimeValue(newValue);
   };
+
+  const monthData = generateMonthChartData(monthlyDonationCounts);
+  const yearData = generateYearChartData(yearlyDonationCounts)
 
   return (
     <>
@@ -123,38 +162,24 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                     <Grid container alignItems="center">
                       <Grid item>
                         {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$108</Typography>
+                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
+                            {monthlyDonationCounts.reduce((a, b) => a + b, 0)} times
+                          </Typography>
                         ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>$961</Typography>
+                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
+                            {yearlyDonationCounts.reduce((a, b) => a + b, 0)} times
+                          </Typography>
                         )}
-                      </Grid>
-                      <Grid item>
-                        <Avatar
-                          sx={{
-                            ...theme.typography.smallAvatar,
-                            cursor: 'pointer',
-                            backgroundColor: theme.palette.primary[200],
-                            color: theme.palette.primary.dark
-                          }}
-                        >
-                          <ArrowDownwardIcon fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
-                        </Avatar>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography
-                          sx={{
-                            fontSize: '1rem',
-                            fontWeight: 500,
-                            color: theme.palette.primary[200]
-                          }}
-                        >
-                          Total Order
-                        </Typography>
                       </Grid>
                     </Grid>
                   </Grid>
                   <Grid item xs={6}>
-                    {timeValue ? <Chart {...ChartDataMonth} /> : <Chart {...ChartDataYear} />}
+                    {timeValue && monthlyDonationCounts ? 
+                        <Chart {...monthData} /> : 
+                        yearlyDonationCounts ? 
+                        <Chart {...yearData} /> :
+                        null
+                    }
                   </Grid>
                 </Grid>
               </Grid>
@@ -166,8 +191,8 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
   );
 };
 
-TotalOrderLineChartCard.propTypes = {
-  isLoading: PropTypes.bool
-};
+// TotalOrderLineChartCard.propTypes = {
+//   isLoading: PropTypes.bool,
+// };
 
 export default TotalOrderLineChartCard;

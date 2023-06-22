@@ -6,6 +6,7 @@ import Alert from '@mui/material/Alert';
 import MainCard from 'ui-component/cards/MainCard';
 import SubCard from 'ui-component/cards/SubCard';
 import CardSecondaryAction from 'ui-component/cards/CardSecondaryAction';
+import { addEwaste } from 'api/api';
 
 // Replace these with actual data from your sensors
 const initialEwasteData = {
@@ -21,17 +22,27 @@ const AddEwaste = () => {
     // Function to simulate getting data from sensors
     const getDataFromSensors = () => {
         setEwasteData({
-            itemType: 'Battery',
-            weight: '200g'
+            itemType: 'batteries',
+            weight: '200'
         });
     };
 
     const handleConfirm = async () => {
         try {
+           
+            const response = await addEwaste(ewasteData.itemType, ewasteData.weight)
+            if (response && response.success) { 
+                setSuccessMessage('Data has been successfully added and points have been awarded.');
+                setErrorMessage('');
+            } else if (response) {
+                setErrorMessage(response.message);
+                setSuccessMessage('');
+            }
+            
             // Simulate a call to your API. Replace with your actual API call
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setSuccessMessage('Data has been successfully added and points have been awarded.');
-            setErrorMessage('');
+            // await new Promise((resolve) => setTimeout(resolve, 1000));
+            // setSuccessMessage('Data has been successfully added and points have been awarded.');
+            // setErrorMessage('');
         } catch (error) {
             setErrorMessage('Failed to add data. Please try again.');
             setSuccessMessage('');

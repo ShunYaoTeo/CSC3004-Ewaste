@@ -1,6 +1,4 @@
-// ===========================|| DASHBOARD - TOTAL ORDER MONTH CHART ||=========================== //
-
-const chartData = {
+const generateDefaultChartData  = {
   type: 'line',
   height: 90,
   options: {
@@ -44,9 +42,24 @@ const chartData = {
   series: [
     {
       name: 'series1',
-      data: [45, 66, 41, 89, 25, 44, 9, 54]
+      data: []
     }
   ]
 };
 
-export default chartData;
+
+
+const generateMonthChartData = (monthlyCounts) => {
+  return {
+    ...generateDefaultChartData,
+    series: [
+      {
+        name: 'series1',
+        data: monthlyCounts
+      }
+    ]
+  };
+};
+
+export default generateMonthChartData;
+

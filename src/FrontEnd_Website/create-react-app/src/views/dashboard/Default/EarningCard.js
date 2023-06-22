@@ -79,7 +79,6 @@ const EarningCard = () => {
       }
     };
     fetchData();
-    console.log(userData)
   }, []);
 
   const handleClick = (event) => {

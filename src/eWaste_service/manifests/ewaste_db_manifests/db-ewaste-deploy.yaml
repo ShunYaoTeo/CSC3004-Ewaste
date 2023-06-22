@@ -21,6 +21,8 @@ spec:
       containers:
       - name: ewaste-db
         image: mysql:5.7
+        args:
+        - "--max_allowed_packet=256M"
         ports:
         - containerPort: 3306
         env:

@@ -43,6 +43,7 @@ export const getUserEwaste = async () => {
     return response.data;
   } catch (error) {
     console.error('Error Sending Request: ', error);
+    return [];
   }
 }
 
