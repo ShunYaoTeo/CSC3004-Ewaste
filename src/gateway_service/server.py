@@ -175,6 +175,19 @@ def getUserPoints():
     return {"points": resp.points}
 
 
+######### IOT Service Endpoints ###########
+@server.route('/get_weight', methods=['GET'])
+def get_weight():
+    url = "http://172.20.10.3:8500/weight"
+
+    try:
+        response = requests.get(url)
+        data = response.json()
+        weight = data['weight']
+        return jsonify({'weight': weight})
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == "__main__":
     try:
         logging.basicConfig()
