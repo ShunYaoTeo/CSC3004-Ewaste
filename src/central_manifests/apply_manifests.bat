@@ -10,8 +10,10 @@ if "%BASE_PATH%"=="" (
 
 :: Function to apply manifests
 :applyManifests
-for %%f in (%~1\%~2) do (
-    kubectl apply -f %%f
+for /R "%~1" %%f in (%~2) do (
+    if exist "%%f" (
+        kubectl apply -f "%%f"
+    )
 )
 goto :eof
 
