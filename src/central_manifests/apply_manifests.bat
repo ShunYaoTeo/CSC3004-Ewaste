@@ -8,19 +8,6 @@ if "%BASE_PATH%"=="" (
     exit /b 1
 )
 
-:: Function to apply manifests
-:applyManifests
-echo Searching in: %~1 for %~2
-for /R "%~1" %%f in (%~2) do (
-    if exist "%%f" (
-        echo Applying: %%f
-        kubectl apply -f "%%f"
-    ) else (
-        echo No match: %%f
-    )
-)
-goto :eof
-
 :: Apply DB manifests in order
 call :applyManifests "%BASE_PATH%\auth_manifests\auth_db_manifests" db-auth-configmap.yaml
 call :applyManifests "%BASE_PATH%\auth_manifests\auth_db_manifests" db-auth-pvc.yaml
@@ -45,5 +32,18 @@ call :applyManifests "%BASE_PATH%\gateway_manifests" *.yaml
 call :applyManifests "%BASE_PATH%\auth_manifests" *.yaml
 call :applyManifests "%BASE_PATH%\ewaste_manifests" *.yaml
 call :applyManifests "%BASE_PATH%\rewards_manifests" *.yaml
+
+:: Function to apply manifests
+:applyManifests
+echo Searching in: %~1 for %~2
+for /R "%~1" %%f in (%~2) do (
+    if exist "%%f" (
+        echo Applying: %%f
+        kubectl apply -f "%%f"
+    ) else (
+        echo No match: %%f
+    )
+)
+goto :eof
 
 exit /b 0
