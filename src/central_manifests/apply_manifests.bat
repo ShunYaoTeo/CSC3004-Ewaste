@@ -41,9 +41,10 @@ call :applyManifests %BASE_PATH%\rewards_manifests\rewards_db_manifests db-rewar
 call :applyManifests %BASE_PATH%\rewards_manifests\rewards_db_manifests db-rewards-service.yaml
 
 :: Apply service manifests
-call :applyManifests %BASE_PATH%\gateway_manifests *.yaml
-call :applyManifests %BASE_PATH%\auth_manifests *.yaml
-call :applyManifests %BASE_PATH%\ewaste_manifests *.yaml
-call :applyManifests %BASE_PATH%\rewards_manifests *.yaml
+call :applyManifests %BASE_PATH%\gateway_manifests "*.yaml"
+call :applyManifests %BASE_PATH%\auth_manifests "*.yaml"
+call :applyManifests %BASE_PATH%\ewaste_manifests "*.yaml"
+call :applyManifests %BASE_PATH%\rewards_manifests "*.yaml"
+
 
 exit /b 0
