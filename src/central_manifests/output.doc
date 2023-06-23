@@ -1,0 +1,57 @@
+Folder PATH listing
+Volume serial number is D249-D186
+C:.
+|   output
+|   output.doc
+|   
++---auth_manifests
+|   |   auth-deploy.yaml
+|   |   configmap.yaml
+|   |   secret.yaml
+|   |   service.yaml
+|   |   
+|   \---auth_db_manifests
+|           db-auth-configmap.yaml
+|           db-auth-deploy.yaml
+|           db-auth-pvc.yaml
+|           db-auth-service.yaml
+|           db-secrets.yaml
+|           init.sql
+|           
++---ewaste_manifests
+|   |   configmap.yaml
+|   |   ewaste-deploy.yaml
+|   |   secret.yaml
+|   |   service.yaml
+|   |   
+|   \---ewaste_db_manifests
+|           db-ewaste-configmap.yaml
+|           db-ewaste-deploy.yaml
+|           db-ewaste-pvc.yaml
+|           db-ewaste-service.yaml
+|           db-secrets.yaml
+|           init.sql
+|           
++---gateway_manifests
+|       configmap.yaml
+|       gateway-deploy.yaml
+|       ingress.yaml
+|       L2Advertisement.yaml
+|       metallb-ipAddPool.yaml
+|       secret.yaml
+|       service.yaml
+|       
+\---rewards_manifests
+    |   configmap.yaml
+    |   rewards-deploy.yaml
+    |   secret.yaml
+    |   service.yaml
+    |   
+    \---rewards_db_manifests
+            db-rewards-configmap.yaml
+            db-rewards-deploy.yaml
+            db-rewards-pvc.yaml
+            db-rewards-service.yaml
+            db-secrets.yaml
+            init.sql
+            

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rewards-configmap
+data:
+  MYSQL_HOST: rewards-db
+  MYSQL_USER: eWaste_user
+  MYSQL_DB: rewards_eWaste
+  MYSQL_PORT: "3306"
+

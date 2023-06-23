@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rewards-db
+  labels:
+    app: rewards-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rewards-db
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: rewards-db
+    spec:
+      containers:
+      - name: rewards-db
+        image: mysql:5.7
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: rewards_eWaste
+        - name: MYSQL_USER
+          value: eWaste_user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: user-password
+        volumeMounts:
+        - name: rewards-db-storage
+          mountPath: /var/lib/mysql
+        - name: rewards-db-init
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: rewards-db-storage
+        persistentVolumeClaim:
+          claimName: rewards-db-pvc
+      - name: rewards-db-init
+        configMap:
+          name: rewards-db-init
