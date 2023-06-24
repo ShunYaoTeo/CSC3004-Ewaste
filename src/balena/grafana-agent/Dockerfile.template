@@ -1,0 +1,1 @@
+FROM bh.cr/ken8/grafana-agent-%%BALENA_ARCH%%

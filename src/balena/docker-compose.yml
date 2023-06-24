@@ -1,0 +1,58 @@
+version: "2.1"
+
+services:
+  audio:
+    image: balenablocks/audio
+    privileged: true
+    ports:
+      - 4317:4317
+  edge-Impulse:
+    restart: always
+    build: ./balena-edge-impulse
+    privileged: true
+    ports:
+      - 4912
+    environment:
+      PULSE_SERVER: tcp:audio:4317
+  grafana-agent:
+    # Contains a Dockerfile.template to support multiple architectures
+    build: ./grafana-agent
+    privileged: true
+    restart: always
+    network_mode: host
+
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    restart: always
+    network_mode: host
+    privileged: true
+    labels:
+      io.balena.features.kernel-modules: "1"
+      io.balena.features.sysfs: "1"
+      io.balena.features.procfs: "1"
+      
+  grafana:
+    image: ghcr.io/volkovlabs/balena-app:latest
+    network_mode: host
+    restart: always
+    labels:
+      io.balena.features.supervisor-api: "1"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - postgres
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    network_mode: host
+    restart: always
+    privileged: true
+    depends_on:
+      - grafana
+
+volumes:
+  grafana-data:

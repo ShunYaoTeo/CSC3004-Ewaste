@@ -1,0 +1,1 @@
+The files here are meant to be installed on raspberry pi. It will not run on any other platform as the configurations are already fixed to the device. Most importantly these files will be run using Balena. Please see the instrunctions.pdf on setting it up.
